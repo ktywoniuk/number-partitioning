@@ -14,6 +14,7 @@
 
 ## ------- import packages -------
 from dwave.system import DWaveSampler, EmbeddingComposite
+from collections import defaultdict
 
 # TODO:  Add code here to define your QUBO dictionary
 def get_qubo(S):
@@ -23,10 +24,15 @@ def get_qubo(S):
         S(list of integers): represents the numbers being partitioned
     """
 
-    Q = {}
+    Q = defaultdict(int)
 
     # Add QUBO construction here
-    
+    ss = sum(S)
+    for i in range(len(S)):
+        Q[(i,i)] = -4*ss*S[i] + 4*S[i]**2
+        for j in range(i+1,len(S)):
+            Q[(i,j)] = 8*S[i]*S[j]
+
     return Q
 
 # TODO:  Choose QPU parameters in the following function
@@ -38,8 +44,8 @@ def run_on_qpu(Q, sampler):
         sampler(dimod.Sampler): a sampler that uses the QPU
     """
 
-    chainstrength = 1 # update
-    numruns = 1 # update
+    chainstrength = 5000 # update
+    numruns = 50 # update
 
     sample_set = sampler.sample_qubo(Q, chain_strength=chainstrength, num_reads=numruns, label='Training - Number Partitioning')
 
